@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Profile Checklist v2.0</title>
+    <style>
+        @media print {
+            @page {
+                size: letter;
+                margin: 0.5in;
+            }
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin: 0 0 10px 0;
+            font-size: 18pt;
+            font-weight: 700;
+        }
+        
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .header-controls label {
+            font-weight: 600;
+            font-size: 11pt;
+        }
+        
+        .header-controls input[type="date"] {
+            padding: 6px 10px;
+            font-size: 10pt;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .header-controls button {
+            padding: 8px 16px;
+            font-size: 10pt;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-populate {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-populate:hover {
+            background: #45a049;
+        }
+        
+        .btn-clear:hover {
+            background: #da190b;
+        }
+        
+        /* PRIMARY FLIGHT DISPLAY - CURRENT ENVIRONMENT */
+        .environment-display {
+            margin: 20px 0;
+            padding: 20px;
+            border: 3px double #2c3e50;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        
+        .environment-display.range {
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFFEF0 100%);
+            border-color: #F9A825;
+        }
+        
+        .environment-display.trend-up {
+            background: linear-gradient(135deg, #E8F5E9 0%, #F1F8F4 100%);
+            border-color: #4CAF50;
+        }
+        
+        .environment-display.trend-down {
+            background: linear-gradient(135deg, #FFEBEE 0%, #FFF5F5 100%);
+            border-color: #f44336;
+        }
+        
+        .environment-display.transition {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFF8F0 100%);
+            border-color: #FF9800;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3); }
+            50% { box-shadow: 0 4px 20px rgba(255, 152, 0, 0.6); }
+        }
+        
+        .environment-display.flip-animation {
+            animation: flashFlip 1s ease-in-out;
+        }
+        
+        @keyframes flashFlip {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.02); box-shadow: 0 6px 24px rgba(44, 62, 80, 0.4); }
+            75% { transform: scale(0.98); }
+        }
+        
+        .environment-header {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .environment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .environment-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .environment-label {
+            font-size: 9pt;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .environment-value {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .environment-value.market-type { color: #1976D2; }
+        .environment-value.trading-mode { color: #7B1FA2; }
+        .environment-value.bias-bullish { color: #4CAF50; }
+        .environment-value.bias-bearish { color: #f44336; }
+        .environment-value.bias-neutral { color: #FF9800; }
+        
+        .playbook-section {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .playbook-title {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .playbook-content {
+            font-size: 10pt;
+            line-height: 1.6;
+        }
+        
+        .playbook-content ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        
+        .playbook-content li {
+            margin-bottom: 4px;
+        }
+        
+        .playbook-content li.positive { color: #2E7D32; }
+        .playbook-content li.negative { color: #C62828; }
+        .playbook-content li.warning { color: #F57C00; }
+        .playbook-content li.neutral { color: #424242; }
+        
+        /* Section Styles */
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+        
+        .section-header {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header:hover {
+            color: #3498db;
+        }
+        
+        .collapse-icon {
+            font-size: 10pt;
+            transition: transform 0.3s;
+        }
+        
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+        
+        .section-content {
+            margin-top: 10px;
+        }
+        
+        .section-content.collapsed {
+            display: none;
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            font-size: 9pt;
+            color: #555;
+            margin-bottom: 4px;
+        }
+        
+        .input-group input,
+        .input-group select {
+            padding: 6px 8px;
+            font-size: 10pt;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .checkbox-group {
+            margin: 8px 0;
+        }
+        
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-size: 10pt;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .checkbox-group label:hover {
+            background: #f8f9fa;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        .button-group button {
+            padding: 8px 14px;
+            font-size: 9pt;
+            font-weight: 600;
+            border: 2px solid;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .button-group button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        
+        .button-group button.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            font-size: 10pt;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        /* Environment Engine Specific Styles */
+        .level-test-logger {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .level-test-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .level-test-controls select {
+            padding: 8px 12px;
+            font-size: 10pt;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .test-result-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .test-result-buttons button {
+            padding: 10px;
+            font-size: 9pt;
+            font-weight: 600;
+            border: 2px solid;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-test-hold {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+        
+        .btn-test-hold:hover {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-test-fail {
+            background: #FFEBEE;
+            border-color: #f44336;
+            color: #C62828;
+        }
+        
+        .btn-test-fail:hover {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-break-hold {
+            background: #E3F2FD;
+            border-color: #2196F3;
+            color: #1565C0;
+        }
+        
+        .btn-break-hold:hover {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-break-fail {
+            background: #FFF3E0;
+            border-color: #FF9800;
+            color: #E65100;
+        }
+        
+        .btn-break-fail:hover {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .flip-history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        .flip-entry {
+            padding: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .flip-entry .flip-time {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 10pt;
+        }
+        
+        .flip-entry .flip-change {
+            font-size: 11pt;
+            font-weight: 600;
+            color: #3498db;
+            margin: 4px 0;
+        }
+        
+        .flip-entry .flip-reason {
+            font-size: 9pt;
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Export Button */
+        .export-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .export-button {
+            padding: 12px 30px;
+            font-size: 12pt;
+            font-weight: 700;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        
+        .export-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .export-status {
+            margin-top: 10px;
+            font-size: 10pt;
+            font-weight: 600;
+        }
+        
+        .export-status.success { color: #4CAF50; }
+        .export-status.error { color: #f44336; }
+        
+        .auto-save-indicator {
+            display: inline-block;
+            margin-left: 15px;
+            padding: 4px 10px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Market Profile Checklist v2.0 - Environment Engine</h1>
+        
+        <div class="header-controls">
+            <label for="date">Date:</label>
+            <input type="date" id="date" />
+            <button class="btn-populate" onclick="setTodayDate()">Today</button>
+            <button class="btn-clear" onclick="confirmClear()">Clear All</button>
+            <span class="auto-save-indicator">AUTO-SAVE: ON</span>
+        </div>
+<!-- PRIMARY FLIGHT DISPLAY - CURRENT MARKET ENVIRONMENT -->
+        <div id="environment-display" class="environment-display range">
+            <div class="environment-header">🎯 CURRENT MARKET ENVIRONMENT</div>
+            
+            <div class="environment-grid">
+                <div class="environment-item">
+                    <div class="environment-label">Market Type</div>
+                    <div id="market-type-display" class="environment-value market-type">AWAITING INPUTS</div>
+                </div>
+                <div class="environment-item">
+                    <div class="environment-label">Directional Bias</div>
+                    <div id="bias-display" class="environment-value">AWAITING INPUTS</div>
+                </div>
+                <div class="environment-item">
+                    <div class="environment-label">Trading Mode</div>
+                    <div id="trading-mode-display" class="environment-value trading-mode">AWAITING INPUTS</div>
+                </div>
+                <div class="environment-item">
+                    <div class="environment-label">Last Update</div>
+                    <div id="last-update-display" class="environment-value" style="font-size: 12pt;">--:--</div>
+                </div>
+            </div>
+            
+            <div class="playbook-section">
+                <div class="playbook-title">📖 PLAYBOOK GUIDANCE</div>
+                <div id="playbook-content" class="playbook-content">
+                    <p style="color: #666; font-style: italic;">Fill in key levels to generate playbook guidance...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KEY LEVELS SECTION -->
+        <div class="section">
+            <div class="section-header">
+                📍 KEY LEVELS
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="yh">Yesterday High (YH)</label>
+                        <input type="number" id="yh" step="0.25" placeholder="e.g., 6825" />
+                    </div>
+                    <div class="input-group">
+                        <label for="yl">Yesterday Low (YL)</label>
+                        <input type="number" id="yl" step="0.25" placeholder="e.g., 6750" />
+                    </div>
+                    <div class="input-group">
+                        <label for="vah">Value Area High (VAH)</label>
+                        <input type="number" id="vah" step="0.25" placeholder="e.g., 6815" />
+                    </div>
+                    <div class="input-group">
+                        <label for="val">Value Area Low (VAL)</label>
+                        <input type="number" id="val" step="0.25" placeholder="e.g., 6760" />
+                    </div>
+                    <div class="input-group">
+                        <label for="poc">Point of Control (POC)</label>
+                        <input type="number" id="poc" step="0.25" placeholder="e.g., 6790" />
+                    </div>
+                    <div class="input-group">
+                        <label for="pdc">Prior Day Close (PDC)</label>
+                        <input type="number" id="pdc" step="0.25" placeholder="e.g., 6800" />
+                    </div>
+                    <div class="input-group">
+                        <label for="onh">Overnight High (ONH)</label>
+                        <input type="number" id="onh" step="0.25" placeholder="e.g., 6810" />
+                    </div>
+                    <div class="input-group">
+                        <label for="onl">Overnight Low (ONL)</label>
+                        <input type="number" id="onl" step="0.25" placeholder="e.g., 6755" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRE-MARKET REFERENCE LEVELS -->
+        <div class="section">
+            <div class="section-header">
+                🌅 PRE-MARKET REFERENCE LEVELS
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="pre_above_vah" />
+                        Price ABOVE prior VAH (Bullish)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="pre_below_val" />
+                        Price BELOW prior VAL (Bearish)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="pre_inside_va" />
+                        Price INSIDE value area (Neutral)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- RTH OPENING ANALYSIS -->
+        <div class="section">
+            <div class="section-header">
+                🔔 RTH OPENING ANALYSIS (9:30 AM)
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="rth_open">RTH Open Price</label>
+                        <input type="number" id="rth_open" step="0.25" placeholder="e.g., 6795" />
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 15px; color: #2c3e50;">Opening Position vs Key Levels:</h4>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="open_above_yh" />
+                        Opened ABOVE YH (Gap up - Bullish)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="open_below_yl" />
+                        Opened BELOW YL (Gap down - Bearish)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="open_inside_range" />
+                        Opened INSIDE yesterday's range (YL to YH)
+                    </label>
+                </div>
+                
+                <h4 style="margin-top: 15px; color: #2c3e50;">Early RTH Milestones (9:30-9:45):</h4>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="tested_onh" />
+                        Tested ONH - held (Bullish)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="rejected_onh" />
+                        Tested ONH - rejected (Bearish)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="broke_pdc_up" />
+                        Broke above PDC (Bullish)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="broke_pdc_down" />
+                        Broke below PDC (Bearish)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPENING RANGE -->
+        <div class="section">
+            <div class="section-header">
+                ⏰ OPENING RANGE (9:30-10:00)
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="orh">OR High</label>
+                        <input type="number" id="orh" step="0.25" placeholder="e.g., 6805" />
+                    </div>
+                    <div class="input-group">
+                        <label for="orl">OR Low</label>
+                        <input type="number" id="orl" step="0.25" placeholder="e.g., 6780" />
+                    </div>
+                    <div class="input-group">
+                        <label>OR Range</label>
+                        <input type="text" id="or_range_display" readonly style="background: #f0f0f0;" />
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 15px; color: #2c3e50;">OR Behavior:</h4>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="or_clean_break_high" />
+                        Clean break above OR high
+                    </label>
+                    <label>
+                        <input type="checkbox" id="or_clean_break_low" />
+                        Clean break below OR low
+                    </label>
+                    <label>
+                        <input type="checkbox" id="or_stayed_inside" />
+                        Stayed inside OR (choppy)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- INITIAL BALANCE -->
+        <div class="section">
+            <div class="section-header">
+                ⚖️ INITIAL BALANCE (9:30-10:30)
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="ibh">IB High</label>
+                        <input type="number" id="ibh" step="0.25" placeholder="e.g., 6820" />
+                    </div>
+                    <div class="input-group">
+                        <label for="ibl">IB Low</label>
+                        <input type="number" id="ibl" step="0.25" placeholder="e.g., 6775" />
+                    </div>
+                    <div class="input-group">
+                        <label>IB Range</label>
+                        <input type="text" id="ib_range_display" readonly style="background: #f0f0f0;" />
+                    </div>
+                    <div class="input-group">
+                        <label>IB Classification</label>
+                        <input type="text" id="ib_classification" readonly style="background: #f0f0f0; font-weight: 700;" />
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 15px; color: #2c3e50;">Post-IB Behavior:</h4>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="ib_broke_high" />
+                        Broke above IB high
+                    </label>
+                    <label>
+                        <input type="checkbox" id="ib_broke_low" />
+                        Broke below IB low
+                    </label>
+                    <label>
+                        <input type="checkbox" id="ib_stayed_inside" />
+                        Stayed inside IB (rotational day)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENVIRONMENT ENGINE SECTION -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                🎛️ ENVIRONMENT ENGINE
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Level Test Logger -->
+                <div class="level-test-logger">
+                    <h4 style="margin-top: 0; color: #2c3e50;">📝 LEVEL TEST LOGGER</h4>
+                    <p style="font-size: 9pt; color: #666; margin-bottom: 12px;">
+                        Log key level tests to update environment automatically
+                    </p>
+                    
+                    <div class="level-test-controls">
+                        <label style="font-weight: 600;">Test Level:</label>
+                        <select id="test-level-select">
+                            <option value="">-- Select Level --</option>
+                            <option value="YH">YH (Yesterday High)</option>
+                            <option value="YL">YL (Yesterday Low)</option>
+                            <option value="VAH">VAH (Value Area High)</option>
+                            <option value="VAL">VAL (Value Area Low)</option>
+                            <option value="IBH">IBH (Initial Balance High)</option>
+                            <option value="IBL">IBL (Initial Balance Low)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="test-result-buttons">
+                        <button class="btn-test-hold" onclick="logLevelTest('TEST_HOLD')">
+                            ✓ Test-Held<br/>
+                            <span style="font-size: 8pt; font-weight: 400;">(Level respected, bounced)</span>
+                        </button>
+                        <button class="btn-test-fail" onclick="logLevelTest('TEST_FAIL')">
+                            ✗ Test-Failed<br/>
+                            <span style="font-size: 8pt; font-weight: 400;">(Level broken through)</span>
+                        </button>
+                        <button class="btn-break-hold" onclick="logLevelTest('BREAK_TEST_HOLD')">
+                            ⚡ Break-Test-Hold<br/>
+                            <span style="font-size: 8pt; font-weight: 400;">(Broke, retested, held)</span>
+                        </button>
+                        <button class="btn-break-fail" onclick="logLevelTest('BREAK_FAIL')">
+                            ⚠️ Break-Failed<br/>
+                            <span style="font-size: 8pt; font-weight: 400;">(Broke, returned inside)</span>
+                        </button>
+                    </div>
+                    
+                    <div id="last-test-logged" style="margin-top: 10px; font-size: 9pt; color: #666; font-style: italic;">
+                        No tests logged yet
+                    </div>
+                </div>
+                
+                <!-- Flip History -->
+                <div style="margin-top: 20px;">
+                    <h4 style="color: #2c3e50;">📊 ENVIRONMENT FLIP HISTORY</h4>
+                    <div id="flip-history" class="flip-history">
+                        <p style="color: #999; font-style: italic; text-align: center;">No flips recorded yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DAILY/WEEKLY PIVOTS -->
+        <div class="section">
+            <div class="section-header">
+                📐 DAILY/WEEKLY PIVOTS
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="daily_pivot">Daily Pivot</label>
+                        <input type="number" id="daily_pivot" step="0.25" />
+                    </div>
+                    <div class="input-group">
+                        <label for="weekly_pivot">Weekly Pivot</label>
+                        <input type="number" id="weekly_pivot" step="0.25" />
+                    </div>
+                    <div class="input-group">
+                        <label for="daily_20ma">Daily 20 MA</label>
+                        <input type="number" id="daily_20ma" step="0.25" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTES SECTION -->
+        <div class="section">
+            <div class="section-header">
+                📝 NOTES & OBSERVATIONS
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <textarea id="notes" placeholder="Add any notes about today's session, setup quality, execution, lessons learned..."></textarea>
+                
+                <h4 style="margin-top: 15px; color: #2c3e50;">End of Day Review:</h4>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>Did Environment Classification Match Actual Price Action?</label>
+                    <select id="environment_accuracy">
+                        <option value="">-- Select --</option>
+                        <option value="YES">✓ YES - Classification was accurate</option>
+                        <option value="NO">✗ NO - Classification was wrong</option>
+                        <option value="PARTIAL">~ PARTIAL - Right initially, changed later</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXPORT TO GOOGLE SHEETS -->
+        <div class="export-section">
+            <button class="export-button" onclick="exportToGoogleSheets()">
+                📤 EXPORT TO GOOGLE SHEETS
+            </button>
+            <div id="export-status" class="export-status"></div>
+        </div>
+    </div>
+<script>
+        // ============================================================================
+        // GLOBAL STATE
+        // ============================================================================
+        
+        let currentMarketType = 'AWAITING INPUTS';
+        let currentTradingMode = 'AWAITING INPUTS';
+        let currentBias = 'AWAITING INPUTS';
+        let levelTestHistory = [];
+        let flipHistory = [];
+        
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
+        window.addEventListener('load', function() {
+            setTodayDate();
+            loadSavedData();
+            setupAutoSave();
+            updateEnvironment();
+        });
+        
+        function setTodayDate() {
+            const dateInput = document.getElementById('date');
+            if (!dateInput.value) {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+        
+        // ============================================================================
+        // AUTO-SAVE FUNCTIONALITY
+        // ============================================================================
+        
+        function setupAutoSave() {
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    autoSave();
+                    if (this.type === 'number' || this.id.includes('rth_open') || this.id.includes('ibh') || this.id.includes('ibl')) {
+                        updateEnvironment();
+                    }
+                });
+            });
+        }
+        
+        function autoSave() {
+            const data = collectFormData();
+            const dateKey = document.getElementById('date')?.value || new Date().toISOString().split('T')[0];
+            localStorage.setItem(`checklist_${dateKey}`, JSON.stringify(data));
+            
+            // Save level test history and flip history
+            localStorage.setItem(`levelTests_${dateKey}`, JSON.stringify(levelTestHistory));
+            localStorage.setItem(`flips_${dateKey}`, JSON.stringify(flipHistory));
+        }
+        
+        function loadSavedData() {
+            const dateKey = document.getElementById('date')?.value;
+            if (!dateKey) return;
+            
+            const savedData = localStorage.getItem(`checklist_${dateKey}`);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                populateForm(data);
+            }
+            
+            // Load level test history
+            const savedTests = localStorage.getItem(`levelTests_${dateKey}`);
+            if (savedTests) {
+                levelTestHistory = JSON.parse(savedTests);
+                updateLastTestDisplay();
+            }
+            
+            // Load flip history
+            const savedFlips = localStorage.getItem(`flips_${dateKey}`);
+            if (savedFlips) {
+                flipHistory = JSON.parse(savedFlips);
+                updateFlipHistoryDisplay();
+            }
+            
+            updateEnvironment();
+        }
+        
+        function collectFormData() {
+            const data = {};
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    data[input.id] = input.checked;
+                } else {
+                    data[input.id] = input.value;
+                }
+            });
+            return data;
+        }
+        
+        function populateForm(data) {
+            Object.keys(data).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        element.checked = data[key];
+                    } else {
+                        element.value = data[key];
+                    }
+                }
+            });
+        }
+        
+        function confirmClear() {
+            if (confirm('Clear all data for today? This cannot be undone.')) {
+                const dateKey = document.getElementById('date')?.value;
+                if (dateKey) {
+                    localStorage.removeItem(`checklist_${dateKey}`);
+                    localStorage.removeItem(`levelTests_${dateKey}`);
+                    localStorage.removeItem(`flips_${dateKey}`);
+                }
+                location.reload();
+            }
+        }
+        
+        // ============================================================================
+        // AUTO-CALCULATIONS
+        // ============================================================================
+        
+        document.getElementById('orh')?.addEventListener('input', calculateORRange);
+        document.getElementById('orl')?.addEventListener('input', calculateORRange);
+        document.getElementById('ibh')?.addEventListener('input', calculateIBRange);
+        document.getElementById('ibl')?.addEventListener('input', calculateIBRange);
+        
+        function calculateORRange() {
+            const orh = parseFloat(document.getElementById('orh')?.value);
+            const orl = parseFloat(document.getElementById('orl')?.value);
+            const display = document.getElementById('or_range_display');
+            
+            if (!isNaN(orh) && !isNaN(orl)) {
+                const range = (orh - orl).toFixed(2);
+                display.value = `${range} points`;
+            } else {
+                display.value = '';
+            }
+        }
+        
+        function calculateIBRange() {
+            const ibh = parseFloat(document.getElementById('ibh')?.value);
+            const ibl = parseFloat(document.getElementById('ibl')?.value);
+            const rangeDisplay = document.getElementById('ib_range_display');
+            const classDisplay = document.getElementById('ib_classification');
+            
+            if (!isNaN(ibh) && !isNaN(ibl)) {
+                const range = (ibh - ibl).toFixed(2);
+                rangeDisplay.value = `${range} points`;
+                
+                const rangeNum = parseFloat(range);
+                if (rangeNum >= 50) {
+                    classDisplay.value = 'WIDE (Rotational)';
+                    classDisplay.style.color = '#F9A825';
+                } else if (rangeNum < 20) {
+                    classDisplay.value = 'NARROW (Trending)';
+                    classDisplay.style.color = '#2196F3';
+                } else {
+                    classDisplay.value = 'NORMAL';
+                    classDisplay.style.color = '#4CAF50';
+                }
+            } else {
+                rangeDisplay.value = '';
+                classDisplay.value = '';
+            }
+        }
+        
+        // ============================================================================
+        // SECTION COLLAPSE FUNCTIONALITY
+        // ============================================================================
+        
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.collapse-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                icon.classList.remove('collapsed');
+            } else {
+                content.classList.add('collapsed');
+                icon.classList.add('collapsed');
+            }
+        }
+        
+        document.querySelectorAll('.section-header').forEach(header => {
+            header.addEventListener('click', function() {
+                toggleSection(this);
+            });
+        });
+        
+        // ============================================================================
+        // ENVIRONMENT ENGINE - CORE LOGIC
+        // ============================================================================
+        
+        function updateEnvironment() {
+            // Compute Market Type
+            currentMarketType = computeMarketType();
+            
+            // Compute Trading Mode
+            currentTradingMode = computeTradingMode(currentMarketType);
+            
+            // Get Directional Bias (from existing sentiment logic)
+            currentBias = computeDirectionalBias();
+            
+            // Update Display
+            updateEnvironmentDisplay();
+            
+            // Generate Playbook
+            updatePlaybook();
+            
+            // Update timestamp
+            const now = new Date();
+            document.getElementById('last-update-display').textContent = 
+                now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function computeMarketType() {
+            const rthOpen = parseFloat(document.getElementById('rth_open')?.value);
+            const yh = parseFloat(document.getElementById('yh')?.value);
+            const yl = parseFloat(document.getElementById('yl')?.value);
+            const ibh = parseFloat(document.getElementById('ibh')?.value);
+            const ibl = parseFloat(document.getElementById('ibl')?.value);
+            
+            // Check if we have minimum data
+            if (isNaN(yh) || isNaN(yl)) {
+                return 'AWAITING INPUTS';
+            }
+            
+            let marketType = 'RANGE'; // Default
+            
+            // Initial classification based on RTH Open
+            if (!isNaN(rthOpen)) {
+                if (rthOpen > yh) {
+                    marketType = 'TREND_UP';
+                } else if (rthOpen < yl) {
+                    marketType = 'TREND_DOWN';
+                }
+            }
+            
+            // Refinement based on IB width
+            if (!isNaN(ibh) && !isNaN(ibl)) {
+                const ibWidth = ibh - ibl;
+                if (ibWidth > 50) {
+                    // Wide IB = rotational bias
+                    marketType = 'RANGE';
+                }
+            }
+            
+            // Check level test history for overrides
+            const hasBreakTestHoldYH = levelTestHistory.some(t => t.level === 'YH' && t.result === 'BREAK_TEST_HOLD');
+            const hasBreakTestHoldYL = levelTestHistory.some(t => t.level === 'YL' && t.result === 'BREAK_TEST_HOLD');
+            const hasBreakFailYH = levelTestHistory.some(t => t.level === 'YH' && t.result === 'BREAK_FAIL');
+            const hasBreakFailYL = levelTestHistory.some(t => t.level === 'YL' && t.result === 'BREAK_FAIL');
+            
+            if (hasBreakTestHoldYH) {
+                marketType = 'TREND_UP';
+            } else if (hasBreakTestHoldYL) {
+                marketType = 'TREND_DOWN';
+            } else if (hasBreakFailYH || hasBreakFailYL) {
+                marketType = 'TRANSITION';
+            }
+            
+            return marketType;
+        }
+        
+        function computeTradingMode(marketType) {
+            const modeMap = {
+                'RANGE': 'SWING',
+                'TREND_UP': 'MOMENTUM',
+                'TREND_DOWN': 'MOMENTUM',
+                'TRANSITION': 'SWING',
+                'AWAITING INPUTS': 'AWAITING INPUTS'
+            };
+            return modeMap[marketType] || 'SWING';
+        }
+        
+        function computeDirectionalBias() {
+            // This uses your EXISTING validated sentiment logic
+            let bullishCount = 0;
+            let bearishCount = 0;
+            
+            // Opening position checks
+            if (document.getElementById('open_above_yh')?.checked) bullishCount++;
+            if (document.getElementById('open_below_yl')?.checked) bearishCount++;
+            
+            // Early RTH milestones
+            if (document.getElementById('tested_onh')?.checked) bullishCount++;
+            if (document.getElementById('rejected_onh')?.checked) bearishCount++;
+            if (document.getElementById('broke_pdc_up')?.checked) bullishCount++;
+            if (document.getElementById('broke_pdc_down')?.checked) bearishCount++;
+            
+            // OR behavior
+            if (document.getElementById('or_clean_break_high')?.checked) bullishCount++;
+            if (document.getElementById('or_clean_break_low')?.checked) bearishCount++;
+            
+            // IB behavior
+            if (document.getElementById('ib_broke_high')?.checked) bullishCount++;
+            if (document.getElementById('ib_broke_low')?.checked) bearishCount++;
+            
+            // Determine bias
+            if (bullishCount > bearishCount + 2) {
+                return 'BULLISH';
+            } else if (bearishCount > bullishCount + 2) {
+                return 'BEARISH';
+            } else {
+                return 'NEUTRAL';
+            }
+        }
+        
+        function updateEnvironmentDisplay() {
+            const displayBox = document.getElementById('environment-display');
+            const marketTypeDisplay = document.getElementById('market-type-display');
+            const tradingModeDisplay = document.getElementById('trading-mode-display');
+            const biasDisplay = document.getElementById('bias-display');
+            
+            // Update Market Type
+            marketTypeDisplay.textContent = currentMarketType;
+            
+            // Update Trading Mode
+            tradingModeDisplay.textContent = currentTradingMode;
+            
+            // Update Bias with color coding
+            biasDisplay.textContent = currentBias;
+            biasDisplay.className = 'environment-value';
+            if (currentBias === 'BULLISH') {
+                biasDisplay.classList.add('bias-bullish');
+            } else if (currentBias === 'BEARISH') {
+                biasDisplay.classList.add('bias-bearish');
+            } else {
+                biasDisplay.classList.add('bias-neutral');
+            }
+            
+            // Update background color based on Market Type
+            displayBox.className = 'environment-display';
+            if (currentMarketType === 'RANGE') {
+                displayBox.classList.add('range');
+            } else if (currentMarketType === 'TREND_UP') {
+                displayBox.classList.add('trend-up');
+            } else if (currentMarketType === 'TREND_DOWN') {
+                displayBox.classList.add('trend-down');
+            } else if (currentMarketType === 'TRANSITION') {
+                displayBox.classList.add('transition');
+            }
+        }
+        
+        // ============================================================================
+        // PLAYBOOK GENERATION
+        // ============================================================================
+        
+        function updatePlaybook() {
+            const playbookContent = document.getElementById('playbook-content');
+            
+            if (currentMarketType === 'AWAITING INPUTS') {
+                playbookContent.innerHTML = '<p style="color: #666; font-style: italic;">Fill in key levels to generate playbook guidance...</p>';
+                return;
+            }
+            
+            const guidance = generatePlaybookGuidance(currentMarketType, currentTradingMode, currentBias);
+            playbookContent.innerHTML = guidance;
+        }
+        
+        function generatePlaybookGuidance(marketType, mode, bias) {
+            let html = '<ul style="margin: 0; padding-left: 20px;">';
+            
+            // Get level values for playbook
+            const vah = document.getElementById('vah')?.value || 'VAH';
+            const val = document.getElementById('val')?.value || 'VAL';
+            const poc = document.getElementById('poc')?.value || 'POC';
+            const yh = document.getElementById('yh')?.value || 'YH';
+            const yl = document.getElementById('yl')?.value || 'YL';
+            
+            if (marketType === 'RANGE' && mode === 'SWING') {
+                html += '<li class="positive">✓ Two-sided trading allowed</li>';
+                
+                if (bias === 'BEARISH') {
+                    html += `<li class="positive">✓ <strong>PRIMARY:</strong> Range Respect shorts at VAH (${vah})</li>`;
+                    html += `<li class="positive">✓ <strong>SECONDARY:</strong> FBD longs at VAL (${val}) IF holds</li>`;
+                } else if (bias === 'BULLISH') {
+                    html += `<li class="positive">✓ <strong>PRIMARY:</strong> FBD longs at VAL (${val})</li>`;
+                    html += `<li class="positive">✓ <strong>SECONDARY:</strong> Range Respect shorts at VAH (${vah}) IF rejects</li>`;
+                } else {
+                    html += `<li class="positive">✓ Fade VAH (${vah}) and VAL (${val}) on valid tests</li>`;
+                }
+                
+                html += `<li class="neutral">• POC (${poc}) is magnet - expect rotation</li>`;
+                html += '<li class="negative">✗ Do NOT chase breakouts outside range</li>';
+                html += '<li class="neutral">• Stops: 2-4 pts beyond level (structure-based)</li>';
+                html += '<li class="neutral">• Targets: Opposite range boundary</li>';
+                html += '<li class="neutral">• SuperDOM: Confirm with bid/ask stacks before entry</li>';
+                html += '<li class="neutral">• Exit: First target, no runners</li>';
+            }
+            
+            else if (marketType === 'TREND_UP' && mode === 'MOMENTUM') {
+                if (bias === 'BEARISH') {
+                    html += '<li class="warning">⚠️ <strong>CONFLICT:</strong> Trend says LONG but bias says BEARISH</li>';
+                    html += '<li class="warning">• Wait for pullback to broken level (YH/VAH/IBH)</li>';
+                    html += '<li class="warning">• If level holds as support → Take long</li>';
+                    html += '<li class="warning">• If level breaks back down → Mode flips to SWING</li>';
+                } else {
+                    html += '<li class="positive">✓ <strong>LONG-ONLY</strong> - do not short against trend</li>';
+                    html += `<li class="positive">✓ <strong>PRIMARY:</strong> Buy pullbacks to broken levels (${yh}/VAH/IBH)</li>`;
+                    html += '<li class="positive">✓ Entry on Break-Test-Hold confirmation</li>';
+                    html += '<li class="positive">✓ Wait for SuperDOM bid stacking at broken level</li>';
+                    html += '<li class="negative">✗ Do NOT fade highs</li>';
+                    html += '<li class="negative">✗ Do NOT take Range Respect shorts</li>';
+                    html += '<li class="neutral">• Stops: 8-12 pts (wider than range day)</li>';
+                    html += '<li class="neutral">• Targets: Take 50% at first target, trail runner</li>';
+                    html += '<li class="neutral">• Trailing stop: Move to BE after +6 pts, trail by 4-6 pts</li>';
+                }
+            }
+            
+            else if (marketType === 'TREND_DOWN' && mode === 'MOMENTUM') {
+                if (bias === 'BULLISH') {
+                    html += '<li class="warning">⚠️ <strong>CONFLICT:</strong> Trend says SHORT but bias says BULLISH</li>';
+                    html += '<li class="warning">• Wait for bounce to broken level (YL/VAL/IBL)</li>';
+                    html += '<li class="warning">• If level holds as resistance → Take short</li>';
+                    html += '<li class="warning">• If level breaks back up → Mode flips to SWING</li>';
+                } else {
+                    html += '<li class="positive">✓ <strong>SHORT-ONLY</strong> - do not buy against trend</li>';
+                    html += `<li class="positive">✓ <strong>PRIMARY:</strong> Sell bounces to broken levels (${yl}/VAL/IBL)</li>`;
+                    html += '<li class="positive">✓ Entry on Break-Test-Hold confirmation</li>';
+                    html += '<li class="positive">✓ Wait for SuperDOM offer stacking at broken level</li>';
+                    html += '<li class="negative">✗ Do NOT fade lows</li>';
+                    html += '<li class="negative">✗ Do NOT take FBD longs</li>';
+                    html += '<li class="neutral">• Stops: 8-12 pts (wider than range day)</li>';
+                    html += '<li class="neutral">• Targets: Take 50% at first target, trail runner</li>';
+                    html += '<li class="neutral">• Trailing stop: Move to BE after +6 pts, trail by 4-6 pts</li>';
+                }
+            }
+            
+            else if (marketType === 'TRANSITION') {
+                html += '<li class="warning">⚠️ <strong>ENVIRONMENT IN FLUX - CAPITAL PRESERVATION MODE</strong></li>';
+                html += '<li class="warning">• If you have open position:</li>';
+                html += '<li class="warning">&nbsp;&nbsp;→ Move stop to breakeven</li>';
+                html += '<li class="warning">&nbsp;&nbsp;→ Exit 50% immediately</li>';
+                html += '<li class="warning">&nbsp;&nbsp;→ Trail remainder tight (2-3 pts)</li>';
+                html += '<li class="negative">✗ No new entries until resolution</li>';
+                html += '<li class="neutral">• Watch for:</li>';
+                html += '<li class="neutral">&nbsp;&nbsp;→ Clean Break-Test-Hold → New trend</li>';
+                html += '<li class="neutral">&nbsp;&nbsp;→ Successful Test-Hold at VA → Back to range</li>';
+                html += '<li class="warning">• Default to RANGE/SWING after 30 min if unresolved</li>';
+                html += '<li class="warning">• Position size: 50% of normal until clarity</li>';
+            }
+            
+            html += '</ul>';
+            return html;
+        }
+        
+        // ============================================================================
+        // LEVEL TEST LOGGER
+        // ============================================================================
+        
+        function logLevelTest(result) {
+            const levelSelect = document.getElementById('test-level-select');
+            const level = levelSelect.value;
+            
+            if (!level) {
+                alert('Please select a level to test first');
+                return;
+            }
+            
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const entry = {
+                time: timestamp,
+                level: level,
+                result: result
+            };
+            
+            // Save old mode for flip detection
+            const oldMode = currentTradingMode;
+            const oldType = currentMarketType;
+            
+            // Add to history
+            levelTestHistory.push(entry);
+            
+            // Update display
+            updateLastTestDisplay();
+            
+            // Update environment
+            updateEnvironment();
+            
+            // Check for flip
+            const newMode = currentTradingMode;
+            const newType = currentMarketType;
+            
+            if (oldMode !== newMode || oldType !== newType) {
+                const reason = `${result.replace(/_/g, '-')} at ${level}`;
+                logEnvironmentFlip(oldType, oldMode, newType, newMode, reason);
+                showFlipNotification(oldType, oldMode, newType, newMode, reason);
+            }
+            
+            // Auto-save
+            autoSave();
+            
+            // Reset select
+            levelSelect.value = '';
+        }
+        
+        function updateLastTestDisplay() {
+            const display = document.getElementById('last-test-logged');
+            if (levelTestHistory.length === 0) {
+                display.textContent = 'No tests logged yet';
+                display.style.color = '#999';
+            } else {
+                const last = levelTestHistory[levelTestHistory.length - 1];
+                const resultText = last.result.replace(/_/g, '-');
+                display.innerHTML = `<strong>Last:</strong> ${last.time} - ${last.level} ${resultText}`;
+                display.style.color = '#2c3e50';
+            }
+        }
+        
+        // ============================================================================
+        // FLIP DETECTION & LOGGING
+        // ============================================================================
+        
+        function logEnvironmentFlip(oldType, oldMode, newType, newMode, reason) {
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const flip = {
+                time: timestamp,
+                oldType: oldType,
+                oldMode: oldMode,
+                newType: newType,
+                newMode: newMode,
+                reason: reason
+            };
+            
+            flipHistory.push(flip);
+            updateFlipHistoryDisplay();
+            autoSave();
+        }
+        
+        function updateFlipHistoryDisplay() {
+            const container = document.getElementById('flip-history');
+            
+            if (flipHistory.length === 0) {
+                container.innerHTML = '<p style="color: #999; font-style: italic; text-align: center;">No flips recorded yet</p>';
+                return;
+            }
+            
+            let html = '';
+            // Show most recent first
+            for (let i = flipHistory.length - 1; i >= 0; i--) {
+                const flip = flipHistory[i];
+                html += `
+                    <div class="flip-entry">
+                        <div class="flip-time">${flip.time}</div>
+                        <div class="flip-change">
+                            ${flip.oldType} (${flip.oldMode}) → ${flip.newType} (${flip.newMode})
+                        </div>
+                        <div class="flip-reason">Trigger: ${flip.reason}</div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function showFlipNotification(oldType, oldMode, newType, newMode, reason) {
+            // Flash animation on environment display
+            const displayBox = document.getElementById('environment-display');
+            displayBox.classList.add('flip-animation');
+            setTimeout(() => {
+                displayBox.classList.remove('flip-animation');
+            }, 1000);
+            
+            // Browser notification (if permitted)
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('🔄 Environment Flip Detected!', {
+                    body: `${oldType} (${oldMode}) → ${newType} (${newMode})\nTrigger: ${reason}`,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">🎯</text></svg>'
+                });
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        showFlipNotification(oldType, oldMode, newType, newMode, reason);
+                    }
+                });
+            }
+        }
+        
+        // ============================================================================
+        // GOOGLE SHEETS EXPORT
+        // ============================================================================
+        
+        function exportToGoogleSheets() {
+            const webAppUrl = localStorage.getItem('googleSheetsWebAppUrl');
+            
+            if (!webAppUrl) {
+                alert('Google Sheets Web App URL not configured.\n\nPlease set it up first:\n1. Go to Configure → Preferences\n2. Enter your Web App URL\n3. Click Save');
+                return;
+            }
+            
+            const statusDiv = document.getElementById('export-status');
+            statusDiv.textContent = 'Exporting...';
+            statusDiv.className = 'export-status';
+            
+            const data = collectFormData();
+            
+            // Add environment engine data
+            data.market_type = currentMarketType;
+            data.trading_mode = currentTradingMode;
+            data.flip_count = flipHistory.length;
+            data.level_test_log = levelTestHistory.map(t => `${t.time}: ${t.level} ${t.result}`).join(' | ');
+            data.environment_accuracy = document.getElementById('environment_accuracy')?.value || '';
+            
+            const params = new URLSearchParams();
+            params.append('data', JSON.stringify(data));
+            
+            const fullUrl = `${webAppUrl}?${params.toString()}`;
+            
+            window.open(fullUrl, '_blank');
+            
+            setTimeout(() => {
+                statusDiv.textContent = '✓ Export initiated - check new browser tab';
+                statusDiv.className = 'export-status success';
+                setTimeout(() => {
+                    statusDiv.textContent = '';
+                }, 5000);
+            }, 1000);
+        }
+        
+        // Request notification permission on page load
+        if ('Notification' in window && Notification.permission === 'default') {
+            setTimeout(() => {
+                Notification.requestPermission();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
