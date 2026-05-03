@@ -7,7 +7,7 @@ from pathlib import Path
 
 from apify_client import ApifyClient
 
-ACTOR_ID = "apidojo/tweet-scraper"
+DEFAULT_ACTOR = "apidojo/twitter-scraper-lite"
 
 
 def main() -> int:
@@ -15,6 +15,11 @@ def main() -> int:
     parser.add_argument("--handle", default="smashelito", help="X handle without @")
     parser.add_argument("--max-items", type=int, default=10000)
     parser.add_argument("--sort", default="Latest", choices=["Latest", "Top"])
+    parser.add_argument(
+        "--actor",
+        default=DEFAULT_ACTOR,
+        help="Apify actor ID (default: free-tier-friendly twitter-scraper-lite)",
+    )
     parser.add_argument("--start", help="YYYY-MM-DD lower bound (optional)")
     parser.add_argument("--end", help="YYYY-MM-DD upper bound (optional)")
     parser.add_argument(
@@ -44,8 +49,8 @@ def main() -> int:
         run_input["end"] = args.end
 
     client = ApifyClient(token)
-    print(f"Starting actor {ACTOR_ID} for @{args.handle} (max {args.max_items})...")
-    run = client.actor(ACTOR_ID).call(run_input=run_input)
+    print(f"Starting actor {args.actor} for @{args.handle} (max {args.max_items})...")
+    run = client.actor(args.actor).call(run_input=run_input)
     if run is None:
         print("ERROR: actor run returned no result", file=sys.stderr)
         return 1
